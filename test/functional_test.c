@@ -1,13 +1,18 @@
 #include "tinyaiff.h"
 
-int main()
+int main(int argc, char **argv)
 {
   AIFF *aiff;
-  uint32_t numframes = 50;
+  uint32_t numframes = 10;
   uint32_t read_frames;
   int8_t buffer[256];
 
-  aiff = aiff_open("test/test.aif");
+  if(argc == 0)
+    return -1;
+
+  printf("%s\n", argv[1]);
+
+  aiff = aiff_open(argv[1]);
   if(aiff == NULL)
     return -1;
 
