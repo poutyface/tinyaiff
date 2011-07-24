@@ -287,3 +287,7 @@ uint64_t aiff_getsamplerate(AIFF *aiff)
   return aiff->samplerate;
 }
 
+void aiff_getcompressiontype(AIFF *aiff, int8_t *type)
+{
+  strncpy((char*)type, (char*)aiff->compressiontype, 4);
+}

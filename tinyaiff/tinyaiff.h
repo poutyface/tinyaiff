@@ -37,5 +37,5 @@ int16_t aiff_getchannels(AIFF *aiff);
 uint32_t aiff_getsampleframes(AIFF *aiff);
 int16_t aiff_getsamplesize(AIFF *aiff);
 uint64_t aiff_getsamplerate(AIFF *aiff);
-
+void aiff_getcompressiontype(AIFF *aiff, int8_t *type);
 #endif

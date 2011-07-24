@@ -3,8 +3,9 @@
 int main(int argc, char **argv)
 {
   AIFF *aiff;
-  uint32_t numframes = 10;
+  uint32_t numframes = 5;
   uint32_t read_frames;
+  int8_t type[5];
   int8_t buffer[256];
 
   if(argc == 0)
@@ -26,7 +27,9 @@ int main(int argc, char **argv)
   printf("sampleframes: %d\n", aiff_getsampleframes(aiff));
   printf("samplesize  : %d\n", aiff_getsamplesize(aiff));
   printf("samplerate  : %lld\n", aiff_getsamplerate(aiff));
-
+  aiff_getcompressiontype(aiff, type); type[4]='\0';
+  printf("compression : %s\n", type);
+  printf("\n");
   
   do{
     read_frames = aiff_readframes(aiff, numframes, buffer);

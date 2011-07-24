@@ -1,3 +1,5 @@
+stereo 16-bit data :
+
 M1F1-AlawC-AFsp.aif (47 kB)
   AIFF-C file, stereo A-law data (compression type: "alaw").
 M1F1-mulawC-AFsp.aif (47 kB)
