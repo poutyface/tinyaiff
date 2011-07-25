@@ -67,7 +67,7 @@ static int parseheader(AIFF *aiff)
 
   getid(id, aiff->fp);
   if(strncmp(id, "FORM", 4) != 0){
-    printf("invalid chunkid for FORM\n");
+    printf("ERROR: invalid chunkid for FORM\n");
     return -1;
   }
 
@@ -83,7 +83,7 @@ static int parseheader(AIFF *aiff)
     aiff->formtype = AIFF_FORMTYPE_AIFC;
   } 
   else{
-    printf("invalid formtype %s\n", formtype);
+    printf("ERROR: invalid formtype %s\n", formtype);
     aiff->formtype = AIFF_FORMTYPE_INVALID;
     return -1;
   }
@@ -98,12 +98,16 @@ static int parsecommonchunk(AIFF *aiff)
   int32_t chunksize;
   FILE *fp = aiff->fp;
 
-  while(ftell(fp) != aiff->filesize){
+  while(ftell(fp) < aiff->filesize){
     getid(id, fp);
     chunksize = get32be(fp);
     chunksize += chunksize & 1;
 
     if(!strncmp(id, "COMM", 4)){
+      if(chunksize < 18){
+        printf("ERROR: invalid common chunk size\n");
+        return -1;
+      }
       aiff->channels = get16be(fp);
       aiff->sampleframes = get32be(fp);
       aiff->samplesize = get16be(fp);
@@ -121,30 +125,30 @@ static int parsecommonchunk(AIFF *aiff)
 
     if(aiff->foundcommonchunk)
       break;
-  }  
+  }
 
   if(!aiff->foundcommonchunk){
-    printf("not found common chunk\n");    
+    printf("ERROR: not found common chunk\n");
     return -1;
   }
 
   if(aiff->channels == 0){
-    printf("invalid number of channels\n");
+    printf("ERROR: invalid number of channels\n");
     return -1;
   }
 
   if(aiff->sampleframes == 0){
-    printf("invalid number of sampleframes\n");
+    printf("ERROR: invalid number of sampleframes\n");
     return -1;
   }
 
   if(aiff->samplesize == 0){
-    printf("invalid number of samplesize\n");
+    printf("ERROR: invalid number of samplesize\n");
     return -1;
   }
 
   if(aiff->samplerate == 0){
-    printf("invalid number of samplerate\n");
+    printf("ERROR: invalid number of samplerate\n");
     return -1;
   }
 
@@ -155,15 +159,16 @@ static int parsecommonchunk(AIFF *aiff)
 static int skiptossndchunk(AIFF *aiff)
 {
   char id[4];
-  int32_t chunksize;
+  int32_t chunksize=0;
   uint32_t offset;
   uint32_t blocksize;
   FILE *fp = aiff->fp;
 
-  while(ftell(fp) != aiff->filesize){
+  while(ftell(fp) < aiff->filesize){
     getid(id, fp);
     chunksize = get32be(fp);
     chunksize += chunksize & 1;
+
     if(!strncmp(id, "SSND", 4)){
       offset = (uint32_t)get32be(fp);
       blocksize = (uint32_t)get32be(fp);
@@ -171,9 +176,11 @@ static int skiptossndchunk(AIFF *aiff)
       aiff->ssndstart = ftell(fp);
       return 0;
     }
+
     fseek(fp, chunksize, SEEK_CUR);
   }
 
+  printf("ERROR: not found a ssnd chunk\n");
   return -1;
 }
 
@@ -200,7 +207,7 @@ AIFF *aiff_open(char *file)
 
   rc = parsecommonchunk(aiff);
   if(rc != 0)
-    goto cleanup;  
+    goto cleanup;
 
   rc = skiptossndchunk(aiff);
   if(rc != 0)
@@ -229,7 +236,6 @@ void aiff_close(AIFF *aiff)
 }
 
 
-
 uint32_t aiff_readframes(AIFF *aiff, uint32_t num, int8_t *data)
 {
   FILE *fp = aiff->fp;
@@ -239,8 +245,8 @@ uint32_t aiff_readframes(AIFF *aiff, uint32_t num, int8_t *data)
   if(aiff->readedsampleframes == aiff->sampleframes)
     return 0;
 
-  read_byte = fread(data, 
-                    1, 
+  read_byte = fread(data,
+                    1,
                     num * (aiff->samplesize >> 3) * aiff->channels,
                     fp);
 
@@ -262,30 +268,36 @@ uint32_t aiff_getfilesize(AIFF *aiff)
   return aiff->filesize;
 }
 
+
 uint32_t aiff_getformtype(AIFF *aiff)
 {
   return aiff->formtype;
 }
+
 
 int16_t aiff_getchannels(AIFF *aiff)
 {
   return aiff->channels;
 }
 
+
 uint32_t aiff_getsampleframes(AIFF *aiff)
 {
   return aiff->sampleframes;
 }
+
 
 int16_t aiff_getsamplesize(AIFF *aiff)
 {
   return aiff->samplesize;
 }
 
+
 uint64_t aiff_getsamplerate(AIFF *aiff)
 {
   return aiff->samplerate;
 }
+
 
 void aiff_getcompressiontype(AIFF *aiff, int8_t *type)
 {

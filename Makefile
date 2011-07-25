@@ -1,7 +1,7 @@
 LIB_NAME=tinyaiff
 STATICLIB_NAME=lib${LIB_NAME}.a
 
-CFLAGS=-g -O3 -Wall -I${LIB_NAME} -Isrc ${OPTS}
+CFLAGS=-g -O3 -Wall -Iinclude -Isrc ${OPTS}
 
 SRC=$(wildcard src/*.c)
 OBJ=$(patsubst %.c,%.o,${SRC})
@@ -30,7 +30,9 @@ clean:
 	rm -rf ${TEST_HELPER_OBJ}
 	rm -rf ${TESTS}
 	rm -rf test/*.dSYM
+	rm -fr test/output/*
 	rm -rf tmp/*
+
 
 ${TESTS}: %: %.c ${STATICLIB_NAME} ${TEST_HELPER_OBJ}
 	$(CC) $(CFLAGS) -Itest -o $@ $< ${STATICLIB_NAME} ${TEST_HELPER_OBJ}

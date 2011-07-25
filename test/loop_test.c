@@ -11,6 +11,7 @@ int main(int argc, char **argv)
   uint32_t read_frames;
   int8_t type[5];
   int8_t buffer[256];
+  int i;
 
   if(argc == 0)
     return -1;
@@ -45,15 +46,19 @@ int main(int argc, char **argv)
   }
 
   
-  do{
-    read_frames = aiff_readframes(aiff, numframes, buffer);
-    fwrite(buffer,
-           1, 
-           read_frames * aiff_getchannels(aiff) * (aiff_getsamplesize(aiff) / 8),
-           outfile);
-  }while(read_frames == numframes);
+  for(i=0; i<5; ++i){
+    do{
+      read_frames = aiff_readframes(aiff, numframes, buffer);
+      fwrite(buffer,
+             1, 
+             read_frames * aiff_getchannels(aiff) * (aiff_getsamplesize(aiff) / 8),
+             outfile);
+    }while(read_frames == numframes);
+    aiff_rewind(aiff);
+  }
 
-  /* aiff_rewind(aiff); */
+
+
  cleanup:
   aiff_close(aiff);
   fclose(outfile);
